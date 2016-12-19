@@ -1,0 +1,14 @@
+#
+# Installation responsefile:
+#
+
+our %CFG;
+
+$CFG{opt}{redirect}=1;
+$CFG{accepteula}=1;
+$CFG{keys}{keyless}=[ "<%= @keyless %>" ];
+$CFG{opt}{install}=1;
+$CFG{prod}="<%= @prod %>";
+$CFG{systems}=[ qw( <%= @systems.join(' ') %>) ];
+
+1;

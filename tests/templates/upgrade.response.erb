@@ -1,0 +1,15 @@
+#
+# Upgrade responsefile:
+#
+
+our %CFG;
+
+$CFG{opt}{redirect}=1;
+$CFG{accepteula}=1;
+$CFG{eat_recreate_creds}=1;
+$CFG{opt}{upgrade}=1;
+$CFG{systems}=[ qw( <%= @systems.join(' ') %>) ];
+$CFG{vcs_allowcomms}=1;
+
+1;
+
