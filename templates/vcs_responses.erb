@@ -16,17 +16,16 @@
 #
 our %CFG;
 
+$CFG{opt}{redirect}=1;
 $CFG{accepteula}=1;
 $CFG{lltoverudp}="<%= @lltoverudp %>";
 $CFG{opt}{configure}=1;
-$CFG{opt}{install}=1;
-$CFG{opt}{installrecpkgs}=<%= @installrecpkgs %>;
-$CFG{opt}{updatekeys}=<%= @updatekeys %>;
-$CFG{opt}{vxkeyless}=<%= @vxkeyless %>;
+$CFG{opt}{updatekeys}=1;
+$CFG{keys}{keyless}=[ "<%= @keyless %>" ];
 $CFG{prod}="<%= @prod %>";
-$CFG{systems}=[ qw( <%= @target_systems.map { |s| s.keys }.flatten.join(' ') %>) ];
+$CFG{activecomponent}=[ "<%= @activecomponent %>" ];
+$CFG{systems}=[ qw( <%= @systems.join(' ') %> ) ];
 $CFG{vcs_clusterid}=<%= my_cluster %>;
-$CFG{vcs_csgnic}{all}="<%= @csgnic %>";
 
 <%= vcs_scalar_opt('allowcomms') %>
 <%= vcs_scalar_opt('clustername') %>
@@ -45,21 +44,21 @@ $CFG{vcs_csgnic}{all}="<%= @csgnic %>";
 <%= vcs_scalar_opt('userenpw') %>
 <%= vcs_scalar_opt('username') %>
 <%= vcs_scalar_opt('userpriv') %>
-<%
-   @target_systems.length.times do |link|
-     @target_systems.each do |sys|
+
+<% 
+	@systems.length.times do |link|
+		@systems.each do |sys|
 -%>
-$CFG{vcs_lltlink<%= link+1%>}{"<%= sys.keys[0] %>"}="<%= sys.values[0]['heartbeat_links'][link] %>";
-<%   end -%>
+$CFG{vcs_lltlink<%= link+1%>}{"<%= sys %>"}="<%= @heartbeat_links[link] %>";
+<% end -%>
 <% end -%>
 
-<% @target_systems.each do |sys| -%>
-$CFG{vcs_lltlinklowpri1}{"<%=sys.keys[0] %>"}="<%= sys.values[0]['lopri_link'] %>";
+<% @systems.each do |sys| -%>
+$CFG{vcs_lltlinklowpri1}{"<%= sys %>"}="<%= @lopri_link %>";
 <% end -%>
 
-
-$CFG{vcs_smtprecp}=[ qw(<%= @smtprecp %>) ];
-$CFG{vcs_smtprsev}=[ qw(<%= @smtprsev %>) ];
-$CFG{vcs_smtpserver}="<%= @smtpserver %>";
+<%= vcs_scalar_opt('smtprecp') %>
+<%= vcs_scalar_opt('smtprsev') %>
+<%= vcs_scalar_opt('smtpserver') %>
 
 1;
