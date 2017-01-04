@@ -1,0 +1,13 @@
+#
+# Patch Upgrade responsefile:
+#
+
+our %CFG;
+
+$CFG{opt}{redirect}=1;
+$CFG{opt}{hotfixupgrade}=1;
+$CFG{systems}=[ qw( <%= @systems.join(' ') %>) ];
+$CFG{vcs_allowcomms}=1;
+
+1;
+

@@ -1,0 +1,64 @@
+<%
+  # If we do not have a clusterid defined, try and generate it randomly using the 
+  # sum of the cluster name
+  my_cluster = @clusterid
+  my_cluster ||= @clustername.sum
+
+  def vcs_scalar_opt(opt)
+    if val = instance_variable_get("@#{opt}")
+      return "$CFG{vcs_#{opt}}=\"#{val}\";"
+    end
+  end
+-%>
+
+#
+# Configuration Values:
+#
+our %CFG;
+
+$CFG{opt}{redirect}=1;
+$CFG{accepteula}=1;
+$CFG{lltoverudp}="<%= @lltoverudp %>";
+$CFG{opt}{configure}=1;
+$CFG{opt}{updatekeys}=1;
+$CFG{keys}{keyless}=[ "<%= @keyless %>" ];
+$CFG{prod}="<%= @prod %>";
+$CFG{activecomponent}=[ "<%= @activecomponent %>" ];
+$CFG{systems}=[ qw( <%= @systems.join(' ') %> ) ];
+$CFG{vcs_clusterid}=<%= my_cluster %>;
+
+<%= vcs_scalar_opt('allowcomms') %>
+<%= vcs_scalar_opt('clustername') %>
+<%= vcs_scalar_opt('csgnetmask') %>
+<%= vcs_scalar_opt('csgvip') %>
+<%= vcs_scalar_opt('vcs_eat_security') %>
+<%= vcs_scalar_opt('eat_security_fips') %>
+<%= vcs_scalar_opt('gconetmask') %>
+<%= vcs_scalar_opt('gconic') %>
+<%= vcs_scalar_opt('gcovip') %>
+<%= vcs_scalar_opt('securegco') %>
+<%= vcs_scalar_opt('smtpserv') %>
+<%= vcs_scalar_opt('snmpcons') %>
+<%= vcs_scalar_opt('snmpcsev') %>
+<%= vcs_scalar_opt('snmpport') %>
+<%= vcs_scalar_opt('userenpw') %>
+<%= vcs_scalar_opt('username') %>
+<%= vcs_scalar_opt('userpriv') %>
+
+<% 
+	@systems.length.times do |link|
+		@systems.each do |sys|
+-%>
+$CFG{vcs_lltlink<%= link+1%>}{"<%= sys %>"}="<%= @heartbeat_links[link] %>";
+<% end -%>
+<% end -%>
+
+<% @systems.each do |sys| -%>
+$CFG{vcs_lltlinklowpri1}{"<%= sys %>"}="<%= @lopri_link %>";
+<% end -%>
+
+<%= vcs_scalar_opt('smtprecp') %>
+<%= vcs_scalar_opt('smtprsev') %>
+<%= vcs_scalar_opt('smtpserver') %>
+
+1;

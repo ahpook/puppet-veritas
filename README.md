@@ -1,84 +1,126 @@
-# puppet-veritas
+# Veritas InfoScale
 
-This module manages the installation and initial configuration of Veritas products.  Curently only VCS (Veritas Cluster Server) is supported, but the goal is to use the same framework to install other applications from the same application suite.
+## Overview
+
+This module is to support installation, configuration, Upgrade and Uninstall for Veritas InfoScale products.
 
 
-## VCS
+## Module Description
 
-### Pre-installation requirements ###
+This module is to support the following function for Veritas InfoScale products:
 
-VCS is shipped as a tarball containing RPM packages and an installer tool.  There is also a supported method of installing the relevant RPM's from YUM and using the provided configuration tool and a resposne file to finish installation and configure the system.  This module assumed you have already copied the RPM's from the tarball into their own YUM repository. In order to do this, follow steps 1 through 3 of the guide; [Installing Veritas Cluster Server using yum](https://sort.symantec.com/public/documents/vcs/6.0/linux/productguides/html/vcs_install/ch16s05.htm) (Adding an RPM group is optional and does not affect this module).  You should not install the modules.
+1. Install, configure, Upgrade and Uninstall the following Veritas InfoScale products:
+    * Enterprise
+    * Storage
+    * Availability
+    * Foundation
+2. Support Puppet facter to discover the InfoScale product objects on the systems, like:
+    * Veritas licenses
+    * VxVM disks,disk groups,volumes
+    * VxFS file systems
+    * VCS resources and service groups.
 
-### Pre-requisiste packages ###
 
-A number of system packages are required, these should be installed before running this module
+## Usage
 
-Redhat 6.6
-* glibc-2.12-1.149.el6.i686
-* glibc-2.12-1.149.el6.x86_64   
-* ksh-20120801-21.el6.x86_64    
-* libgcc-4.4.7-11.el6.i686      
-* libgcc-4.4.7-11.el6.x86_64
-* libstdc++-4.4.7-11.el6.i686   
-* libstdc++-4.4.7-11.el6.x86_64 
-* perl-5.10.1-136.el6.x86_64
+### Deploy Veritas InfoScale product from Puppet server to managed hosts
 
-Note, for package requirements of other distros you can run _installvcs -requirements_ from the tarball.
+1. Create one site.pp following the examples under veritas_infoscale/examples/
 
-### Single or multiple installation mode ###
+2. Wait about half an hour, the client systems will automatically deploy InfoScale Enterprise with the puppet manifest file.
 
-VCS has the ability to perform installations simultaneously on multiple nodes.  This feature requires the ability to ssh between the hosts in the cluster using a root SSH key.  Alternativly the software can be installed independantly on each cluster node.  This module supports both methods of operation.  If you have root SSH key communication between the cluster nodes, then you can define the systems in the cluster using the `system[]` parameter and run puppet on one of the cluster nodes to configure all of them.  Alternativly you can run Puppet on each node in the cluster with the `heartbeat_links[]` and `lopri_link` parameters defined.  See the following examples:
-
-#### With SSH keys, running Puppet once ####
-
-```puppet
-class { 'veritas::vcs':
-  systems =>  [
-    { 'cluster-node-01' => { 
-        'heartbeat_links' => [ 'eth3', 'eth7' ],
-        'lopri_link'      => 'eth1',
-      },
-    },
-    { 'cluster-node-02' => {
-        'heartbeat_links' => ['eth3', 'eth7' ],
-        'lopri_link'     => 'eth1',
-      },
-    }
-  ],
-  clustername => 'vcluster01',
-  csgnetmask  => '255.255.254.0',
-  csgnic      => 'eth1',
-  csgvip      => '192.168.22.4',
-  smtprecp    => 'craig@enviatics.com',
-  smtpserver  => 'smtp.enviatics.com',
-}
-```
-
-#### Without SSH keys, running Puppet on each node
+Or run the following command on client systems directly to immediately deploy InfoScale Enterprise:
 
 ```puppet
-class { 'veritas::vcs':
-  heartbeat_links   => [ 'eth3', 'eth7' ],
-  lopri_link        => 'eth1'
-  clustername       => 'cluster1',
-  csgnetmask        => '255.255.254.0',
-  csgnic            => 'eth1',
-  csgvip            => '192.168.33.4',
-  smtprecp          => 'craig@enviatics.com',
-  smtpserver        => 'smtp.enviatics.com',
-}
+    # puppet agent -t
 ```
 
-In this example, the name of the node will be taken from `$::hostname`, to override this you can pass in the `nodename` parameter.
+### Examples ###
+
+The details of examples can refer to derectory veritas_infoscale/examples.
+
+#### Install InfoScale Enterprise ####
+
+```puppet
+class{ 'veritas_infoscale::install':
+   prod => 'ENTERPRISE72',
+   keyless => 'ENTERPRISE',
+   install_script => '/mnt/infoscale_image/dvd2-sol_x64/sol11_x64/installer',
+}   
+```
+
+#### Configure InfoScale Enterprise with VCS component ####
+
+```puppet
+class{ 'veritas_infoscale::configure':
+   prod => 'ENTERPRISE72',
+   activecomponent =>  'VCS72',
+   clustername       => 'cluster1',
+   systems => [ 'sol11u3-n1', 'sol11u3-n2' ],
+   keyless => 'ENTERPRISE',
+   install_script => '/opt/VRTS/install/installer',
+   heartbeat_links   => [ 'net1', 'net2' ],
+   lopri_link        => 'net0',
+}
+````
 
 
+### Discover Veritas InfoScale product objects
+
+1. Run the following command to discover all system facters including Veritas InfoScale objects:
+
+```puppet
+    # puppet facts
+```
+ 
+2. Run the following command to discover Veritas InfoScale objects respectively:
+
+For example:
+
+To check Veritas Licenses
+
+```puppet
+    # facter -p veritas_licenses
+```
+ 
+To check Veritas VxVM disks, disk groups, volumes
+
+```puppet
+    # facter -p veritas_vxvm_disks
+    # facter -p veritas_vxvm_diskgroups
+```
+
+To check Veritas VxFS file sytems, mounts
+
+```puppet
+    # facter -p veritas_vxfs_filesystems
+```
+
+To check Veritas VCS resources and service groups
+
+```puppet
+    # facter -p veritas_vcs_cluster
+```
+
+To check Veritas CFS cluster status
+
+```puppet
+    # facter -p veritas_cfs_cluster
+```
+
+## Reference
+
+This infoscale module support the following native Puppet facts:
+
+    * veritas_licenses
+    * veritas_vxvm_disks
+    * veritas_vxvm_diskgroups
+    * veritas_vxfs_filesystems
+    * veritas_vcs_cluster
+    * veritas_cfs_cluster
+	* veritas_packages
 
 
+## Limitations
 
-
-
-###
-
-* Written and maintained by Craig Dunn <craig@craigdunn.org> - @crayfishx
-* Sponsered by Baloise Group [http://baloise.github.io](http://baloise.github.io) 
-
+Currently, puppet resource types and providers to manipulate service groups, volumes, licenses are not supported.
